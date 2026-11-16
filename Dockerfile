@@ -17,6 +17,7 @@ RUN pip install --no-cache-dir .
 
 # Train the model at build time so the image is self-contained
 COPY data ./data
+ENV SCAMCHECK_DATA_DIR=/app/data
 RUN python -m scamcheck.train --out /app/models/scamcheck.joblib --metrics /app/models/metrics.json
 
 COPY --from=frontend /frontend/dist /app/frontend/dist
