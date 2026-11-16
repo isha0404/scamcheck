@@ -1,0 +1,48 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -e ".[dev]"
+      - run: pytest -v
+      - name: Train and show metrics
+        run: python -m scamcheck.train
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npm test
+      - run: npm run build
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t scamcheck .
+      - name: Start the container and check a message
+        run: |
+          docker run -d -p 8000:8000 --name scamcheck scamcheck
+          for i in $(seq 1 30); do curl -sf localhost:8000/api/health && break; sleep 1; done
+          curl -sf -X POST localhost:8000/api/check -H 'Content-Type: application/json' \
+            -d '{"message":"Royal Mail: pay £1.45 at royalmail-redelivery-uk.com"}' | tee /dev/stderr | grep -q '"verdict":"scam"'
+          curl -sf localhost:8000/ | grep -q '<div id="root">'

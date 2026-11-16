@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+.env
+.DS_Store
+
+# trained model files are rebuilt with `python -m scamcheck.train`
+models/*
+!models/.gitkeep
+
+# frontend
+frontend/node_modules/
+frontend/dist/
