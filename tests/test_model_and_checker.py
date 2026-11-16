@@ -84,3 +84,22 @@ def test_result_serialises(model):
     d = check("Pay now at bit.ly/x", model).to_dict()
     json.dumps(d)
     assert {"verdict", "label", "risk", "signals", "model_terms", "advice"} <= d.keys()
+
+
+def test_data_dir_can_be_set_by_environment(tmp_path, monkeypatch):
+    """Regression test: once installed into site-packages (as in Docker), the data
+    folder can't be found relative to the code, so SCAMCHECK_DATA_DIR must work."""
+    import importlib
+    import shutil
+
+    import scamcheck.data as data_mod
+    shutil.copy(data_mod.UCI_FILE, tmp_path / "SMSSpamCollection")
+    shutil.copy(data_mod.MODERN_FILE, tmp_path / "modern_uk_examples.tsv")
+    monkeypatch.setenv("SCAMCHECK_DATA_DIR", str(tmp_path))
+    try:
+        reloaded = importlib.reload(data_mod)
+        assert reloaded.DATA_DIR == tmp_path
+        assert len(reloaded.load_all()["uci"][0]) == 5574
+    finally:
+        monkeypatch.delenv("SCAMCHECK_DATA_DIR")
+        importlib.reload(data_mod)
