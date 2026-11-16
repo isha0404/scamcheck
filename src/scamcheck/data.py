@@ -8,9 +8,28 @@
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
+
+def _find_data_dir() -> Path:
+    """Where the training data lives.
+
+    1. SCAMCHECK_DATA_DIR if set (the Docker image sets this).
+    2. ./data in the current folder (running from the project folder).
+    3. The repo's data/ folder next to src/ (an editable install).
+    Looking only relative to this file breaks once the package is installed
+    into site-packages, which is what a normal `pip install .` does.
+    """
+    if os.environ.get("SCAMCHECK_DATA_DIR"):
+        return Path(os.environ["SCAMCHECK_DATA_DIR"])
+    cwd_data = Path.cwd() / "data"
+    if (cwd_data / "SMSSpamCollection").exists():
+        return cwd_data
+    return Path(__file__).resolve().parents[2] / "data"
+
+
+DATA_DIR = _find_data_dir()
 UCI_FILE = DATA_DIR / "SMSSpamCollection"
 MODERN_FILE = DATA_DIR / "modern_uk_examples.tsv"
 
