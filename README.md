@@ -90,7 +90,7 @@ python -m scamcheck "Hi Mum, this is my new number, can you send £300 today?"
 ### Tests
 
 ```bash
-pytest                       # 52 Python tests: rules, model quality, verdicts, API, security headers
+pytest                       # 53 Python tests: rules, model quality, verdicts, API, security headers
 cd frontend && npm test      # highlight logic
 ```
 
