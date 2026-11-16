@@ -10,6 +10,7 @@ Why this model?
 from __future__ import annotations
 
 import datetime as dt
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -20,7 +21,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import FeatureUnion, Pipeline
 
-DEFAULT_MODEL_PATH = Path(__file__).resolve().parents[2] / "models" / "scamcheck.joblib"
+# Same idea as data.py: an env var wins, then ./models in the current folder.
+DEFAULT_MODEL_PATH = Path(os.environ.get("SCAMCHECK_MODEL", Path.cwd() / "models" / "scamcheck.joblib"))
 
 
 def build_pipeline() -> Pipeline:
